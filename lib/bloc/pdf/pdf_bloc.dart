@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:recipe_book/presentation/bloc/pdf/pdf_event.dart';
-import 'package:recipe_book/presentation/bloc/pdf/pdf_state.dart';
+import 'package:recipe_book/bloc/pdf/pdf_event.dart';
+import 'package:recipe_book/bloc/pdf/pdf_state.dart';
 import 'package:recipe_book/presentation/pages/pdf_generate.dart';
 
 class PdfBloc extends Bloc<PdfEvent, PdfState> {

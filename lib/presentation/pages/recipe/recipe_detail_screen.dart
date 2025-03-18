@@ -1,16 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:recipe_book/presentation/bloc/pdf/pdf_bloc.dart';
-import 'package:recipe_book/presentation/bloc/pdf/pdf_event.dart';
-import 'package:recipe_book/presentation/bloc/pdf/pdf_state.dart';
-
-import '../../../model/recipe.dart';
+import 'package:recipe_book/bloc/pdf/pdf_bloc.dart';
+import 'package:recipe_book/bloc/pdf/pdf_event.dart';
+import 'package:recipe_book/bloc/pdf/pdf_state.dart';
 
 class RecipeDetailScreen extends StatelessWidget {
-  final Recipe recipe;
+  final dynamic recipe;
 
   const RecipeDetailScreen({super.key, required this.recipe});
-
   void _showAlert(BuildContext context, String title, String message) {
     showDialog(
       context: context,
@@ -65,6 +64,8 @@ class RecipeDetailScreen extends StatelessWidget {
               Navigator.of(context).pop(); // Close the loading dialog
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 _showAlert(context, 'Error', state.message);
+                print(
+                    'The object error thrown is  ${state.message.toString()}');
               });
             }
           },
@@ -73,7 +74,38 @@ class RecipeDetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.network(recipe.image),
+                recipe.image.isNotEmpty
+                    ? SizedBox(
+                        width: double.infinity,
+                        height: 200,
+                        child: recipe.image.startsWith('http')
+                            ? Image.network(
+                                recipe.image,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Image.asset(
+                                    'assets/default_recipe.png',
+                                    fit: BoxFit.cover,
+                                  );
+                                },
+                              )
+                            : Image.file(
+                                File(recipe.image),
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Image.asset(
+                                    'assets/default_recipe.png',
+                                    fit: BoxFit.cover,
+                                  );
+                                },
+                              ),
+                      )
+                    : Image.asset(
+                        'assets/default_recipe.png',
+                        width: double.infinity, // Adjust the width as needed
+                        height: 200, // Adjust the height as needed
+                        fit: BoxFit.cover,
+                      ),
                 const SizedBox(height: 16),
                 Text(
                   recipe.name,
@@ -164,7 +196,8 @@ class RecipeDetailScreen extends StatelessWidget {
         floatingActionButton: Builder(
           builder: (context) {
             return FloatingActionButton(
-              onPressed: () {
+              onPressed: () async {
+                // await _requestPermissions();
                 BlocProvider.of<PdfBloc>(context)
                     .add(GenerateRecipePdf(recipe));
               },

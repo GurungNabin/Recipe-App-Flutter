@@ -1,107 +1,10 @@
-// import 'package:flutter/material.dart';
-// import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:recipe_book/presentation/bloc/recipe/recipe_bloc.dart';
-// import 'package:recipe_book/presentation/bloc/recipe/recipe_event.dart';
-// import 'package:recipe_book/presentation/bloc/recipe/recipe_state.dart';
-// import 'package:recipe_book/presentation/pages/pdf_generate.dart';
-// import 'package:recipe_book/presentation/pages/recipe/recipe_detail_screen.dart';
-// import 'package:recipe_book/widget/custom_card.dart';
-
-// class MyRecipeScreen extends StatefulWidget {
-//   const MyRecipeScreen({super.key});
-
-//   @override
-//   State<MyRecipeScreen> createState() => _MyRecipeScreenState();
-// }
-
-// class _MyRecipeScreenState extends State<MyRecipeScreen> {
-//   @override
-//   void initState() {
-//     super.initState();
-//     context.read<RecipeBloc>().add(FetchRecipes());
-//   }
-
-//   void _showAlert(BuildContext context, String title, String message) {
-//     if (!mounted) return;
-//     showDialog(
-//       context: context,
-//       builder: (BuildContext context) {
-//         return AlertDialog(
-//           title: Text(title),
-//           content: Text(message),
-//           actions: <Widget>[
-//             TextButton(
-//               child: const Text('OK'),
-//               onPressed: () {
-//                 Navigator.of(context).pop();
-//               },
-//             ),
-//           ],
-//         );
-//       },
-//     );
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Recipes'),
-//       ),
-//       body: BlocBuilder<RecipeBloc, RecipeState>(
-//         builder: (context, state) {
-//           if (state is RecipeLoading) {
-//             return const Center(child: CircularProgressIndicator());
-//           } else if (state is RecipeError) {
-//             return Center(child: Text(state.message));
-//           } else if (state is RecipeLoaded) {
-//             return ListView.builder(
-//               itemCount: state.recipes!.length,
-//               itemBuilder: (context, index) {
-//                 final recipe = state.recipes![index];
-//                 return CustomCard(
-//                   imageUrl: recipe.image,
-//                   name: recipe.name,
-//                   tags: recipe.tags,
-//                   difficulty: recipe.difficulty,
-//                   onTap: () {
-//                     Navigator.push(
-//                       context,
-//                       MaterialPageRoute(
-//                         builder: (context) =>
-//                             RecipeDetailScreen(recipe: recipe),
-//                       ),
-//                     );
-//                   },
-//                 );
-//               },
-//             );
-//           } else {
-//             return const Center(child: Text('No recipes available.'));
-//           }
-//         },
-//       ),
-//       floatingActionButton: FloatingActionButton(
-//         onPressed: () async {
-//           final state = context.read<RecipeBloc>().state;
-//           if (state is RecipeLoaded) {
-//             final filePath =
-//                 await PdfGenerator.generateRecipeListPdf(state.recipes!);
-//             _showAlert(context, 'Success', 'PDF saved to $filePath');
-//           }
-//         },
-//         child: const Icon(Icons.download),
-//       ),
-//     );
-//   }
-// }
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:recipe_book/presentation/bloc/recipe/recipe_bloc.dart';
-import 'package:recipe_book/presentation/bloc/recipe/recipe_event.dart';
-import 'package:recipe_book/presentation/bloc/recipe/recipe_state.dart';
+import 'package:recipe_book/bloc/recipe/recipe_bloc.dart';
+import 'package:recipe_book/bloc/recipe/recipe_event.dart';
+import 'package:recipe_book/bloc/recipe/recipe_state.dart';
 import 'package:recipe_book/presentation/pages/pdf_generate.dart';
+import 'package:recipe_book/presentation/pages/recipe/add_recipe_screen.dart';
 import 'package:recipe_book/presentation/pages/recipe/recipe_detail_screen.dart';
 import 'package:recipe_book/widget/custom_card.dart';
 
@@ -159,6 +62,19 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Recipes'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AddRecipeScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -167,29 +83,39 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
               if (state is RecipeLoading) {
                 return const Center(child: CircularProgressIndicator());
               } else if (state is RecipeError) {
+                print('Error: ${state.message}');
                 return Center(child: Text(state.message));
               } else if (state is RecipeLoaded) {
-                return ListView.builder(
-                  itemCount: state.recipes!.length,
-                  itemBuilder: (context, index) {
-                    final recipe = state.recipes![index];
-                    return CustomCard(
-                      imageUrl: recipe.image,
-                      name: recipe.name,
-                      tags: recipe.tags,
-                      difficulty: recipe.difficulty,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                RecipeDetailScreen(recipe: recipe),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                );
+                final recipes = state.recipes ?? [];
+                return recipes.isEmpty
+                    ? const Center(
+                        child: Text('No recipes available for local database.'))
+                    : ListView.builder(
+                        itemCount: recipes.length,
+                        itemBuilder: (context, index) {
+                          final recipe = recipes[index];
+
+                          String imageUrl = recipe.image;
+                          print('object of image is $imageUrl');
+
+                          return CustomCard(
+                            // imageUrl: File(imageUrl).toString(),
+                            imageUrl: imageUrl,
+                            name: recipe.name,
+                            tags: recipe.tags,
+                            difficulty: recipe.difficulty,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      RecipeDetailScreen(recipe: recipe),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
               } else {
                 return const Center(child: Text('No recipes available.'));
               }
@@ -202,6 +128,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                 if (snapshot.connectionState == ConnectionState.done) {
                   Navigator.of(context).pop(); // Close the loading dialog
                   if (snapshot.hasError) {
+                    print('Error I get is ${snapshot.error}');
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       _showAlert(context, 'Error', snapshot.error.toString());
                     });
@@ -218,18 +145,22 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
             ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          final state = context.read<RecipeBloc>().state;
-          if (state is RecipeLoaded) {
-            _showLoadingDialog(context); // Show loading dialog immediately
-            setState(() {
-              _pdfGenerationFuture =
-                  PdfGenerator.generateRecipeListPdf(state.recipes!);
-            });
-          }
+      floatingActionButton: Builder(
+        builder: (context) {
+          return FloatingActionButton(
+            onPressed: () {
+              final state = context.read<RecipeBloc>().state;
+              if (state is RecipeLoaded) {
+                _showLoadingDialog(context);
+                setState(() {
+                  _pdfGenerationFuture =
+                      PdfGenerator.generateRecipeListPdf(state.recipes!);
+                });
+              }
+            },
+            child: const Icon(Icons.picture_as_pdf),
+          );
         },
-        child: const Icon(Icons.download),
       ),
     );
   }

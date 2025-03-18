@@ -9,7 +9,7 @@ abstract class PdfEvent extends Equatable {
 }
 
 class GenerateRecipePdf extends PdfEvent {
-  final Recipe recipe;
+  final dynamic recipe;
 
   const GenerateRecipePdf(this.recipe);
 

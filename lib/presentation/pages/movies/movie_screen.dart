@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:recipe_book/presentation/bloc/movie/movie_bloc.dart';
-import 'package:recipe_book/presentation/bloc/movie/movie_event.dart';
-import 'package:recipe_book/presentation/bloc/movie/movie_state.dart';
+import 'package:recipe_book/bloc/movie/movie_bloc.dart';
+import 'package:recipe_book/bloc/movie/movie_event.dart';
+import 'package:recipe_book/bloc/movie/movie_state.dart';
 import 'package:recipe_book/widget/movie_card.dart';
 
 class MyMovieScreen extends StatefulWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recipe_book/api/movie.dart';
-import 'package:recipe_book/presentation/bloc/movie/movie_event.dart';
-import 'package:recipe_book/presentation/bloc/movie/movie_state.dart';
+import 'package:recipe_book/bloc/movie/movie_event.dart';
+import 'package:recipe_book/bloc/movie/movie_state.dart';
 
 class MovieBloc extends Bloc<MovieEvent, MovieState> {
   final MovieServices movieServices;

@@ -3,14 +3,34 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:recipe_book/model/recipe.dart';
+import 'package:recipe_book/model/recipe_database.dart';
 
 class PdfGenerator {
-  static Future<String> generatePdf(Recipe recipe) async {
+  static Future<String> generatePdf(dynamic recipe) async {
     final pdf = pw.Document();
 
-    final response = await Dio()
-        .get(recipe.image, options: Options(responseType: ResponseType.bytes));
-    final image = pw.MemoryImage(response.data);
+    String imageUrl;
+    if (recipe is LocalRecipe) {
+      imageUrl = recipe.imagePaths[0];
+    } else if (recipe is Recipe) {
+      imageUrl = recipe.image;
+    } else {
+      throw Exception('Unsupported recipe type');
+    }
+
+    pw.ImageProvider? pdfImage;
+    if (imageUrl.startsWith('http')) {
+      // Network image
+      final response = await Dio()
+          .get(imageUrl, options: Options(responseType: ResponseType.bytes));
+      pdfImage = pw.MemoryImage(response.data);
+    } else {
+      // Local file image
+      final file = File(imageUrl);
+      if (await file.exists()) {
+        pdfImage = pw.MemoryImage(file.readAsBytesSync());
+      }
+    }
 
     pdf.addPage(
       pw.MultiPage(
@@ -19,53 +39,58 @@ class PdfGenerator {
             pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                pw.Image(image),
-                pw.SizedBox(height: 16),
+                if (pdfImage != null)
+                  pw.Image(pdfImage, height: 100, width: 100),
+                pw.SizedBox(height: 8),
                 pw.Text(recipe.name,
                     style: pw.TextStyle(
-                        fontSize: 24, fontWeight: pw.FontWeight.bold)),
-                pw.SizedBox(height: 16),
+                        fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 8),
                 pw.Text(
                     'Rating: ${recipe.rating} (${recipe.reviewCount} reviews)',
-                    style: const pw.TextStyle(fontSize: 18)),
+                    style: const pw.TextStyle(fontSize: 14)),
                 pw.Text('Cuisine: ${recipe.cuisine}',
-                    style: const pw.TextStyle(fontSize: 18)),
+                    style: const pw.TextStyle(fontSize: 14)),
                 pw.Text('Difficulty: ${recipe.difficulty}',
-                    style: const pw.TextStyle(fontSize: 18)),
+                    style: const pw.TextStyle(fontSize: 14)),
                 pw.Text('Prep Time: ${recipe.prepTimeMinutes} minutes',
-                    style: const pw.TextStyle(fontSize: 18)),
+                    style: const pw.TextStyle(fontSize: 14)),
                 pw.Text('Cook Time: ${recipe.cookTimeMinutes} minutes',
-                    style: const pw.TextStyle(fontSize: 18)),
+                    style: const pw.TextStyle(fontSize: 14)),
                 pw.Text('Servings: ${recipe.servings}',
-                    style: const pw.TextStyle(fontSize: 18)),
+                    style: const pw.TextStyle(fontSize: 14)),
                 pw.Text('Calories per Serving: ${recipe.caloriesPerServing}',
-                    style: const pw.TextStyle(fontSize: 18)),
-                pw.SizedBox(height: 16),
+                    style: const pw.TextStyle(fontSize: 14)),
+                pw.SizedBox(height: 8),
                 pw.Text('Ingredients:',
                     style: pw.TextStyle(
-                        fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                        fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 4),
+                ...recipe.ingredients.map((ingredient) => pw.Text(
+                    '- $ingredient',
+                    style: const pw.TextStyle(fontSize: 12))),
                 pw.SizedBox(height: 8),
-                ...recipe.ingredients
-                    .map((ingredient) => pw.Text('- $ingredient')),
-                pw.SizedBox(height: 16),
                 pw.Text('Instructions:',
                     style: pw.TextStyle(
-                        fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                        fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 4),
+                ...recipe.instructions.map((instruction) => pw.Text(
+                    '- $instruction',
+                    style: const pw.TextStyle(fontSize: 12))),
                 pw.SizedBox(height: 8),
-                ...recipe.instructions
-                    .map((instruction) => pw.Text('- $instruction')),
-                pw.SizedBox(height: 16),
                 pw.Text('Tags:',
                     style: pw.TextStyle(
-                        fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                        fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 4),
+                pw.Text(recipe.tags.join(', '),
+                    style: const pw.TextStyle(fontSize: 12)),
                 pw.SizedBox(height: 8),
-                pw.Text(recipe.tags.join(', ')),
-                pw.SizedBox(height: 16),
                 pw.Text('Meal Type:',
                     style: pw.TextStyle(
-                        fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                pw.SizedBox(height: 8),
-                pw.Text(recipe.mealType.join(', ')),
+                        fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 4),
+                pw.Text(recipe.mealType.join(', '),
+                    style: const pw.TextStyle(fontSize: 12)),
               ],
             )
           ];
@@ -83,14 +108,28 @@ class PdfGenerator {
     return file.path;
   }
 
-  static Future<String> generateRecipeListPdf(List<Recipe> recipes) async {
+  static Future<String> generateRecipeListPdf(List<dynamic> recipes) async {
     final pdf = pw.Document();
 
-    // Load images for all recipes
     final images = await Future.wait(recipes.map((recipe) async {
-      final response = await Dio().get(recipe.image,
-          options: Options(responseType: ResponseType.bytes));
-      return pw.MemoryImage(response.data);
+      String imageUrl =
+          recipe is LocalRecipe ? recipe.imagePaths[0] : recipe.image;
+      pw.ImageProvider? pdfImage;
+
+      if (imageUrl.startsWith('http')) {
+        // Network image
+        final response = await Dio()
+            .get(imageUrl, options: Options(responseType: ResponseType.bytes));
+        pdfImage = pw.MemoryImage(response.data);
+      } else {
+        // Local file image
+        final file = File(imageUrl);
+        if (await file.exists()) {
+          pdfImage = pw.MemoryImage(file.readAsBytesSync());
+        }
+      }
+
+      return pdfImage;
     }).toList());
 
     pdf.addPage(
@@ -119,15 +158,21 @@ class PdfGenerator {
                   return pw.TableRow(
                     children: [
                       pw.Container(
-                        height: 50,
-                        width: 50,
-                        child: pw.Image(images[index]),
+                        height: 25,
+                        width: 25,
+                        child: images[index] != null
+                            ? pw.Image(images[index]!)
+                            : pw.Container(),
                       ),
-                      pw.Text(recipe.name),
-                      pw.Text(recipe.cuisine),
-                      pw.Text(recipe.difficulty),
+                      pw.Text(recipe.name,
+                          style: const pw.TextStyle(fontSize: 12)),
+                      pw.Text(recipe.cuisine,
+                          style: const pw.TextStyle(fontSize: 12)),
+                      pw.Text(recipe.difficulty,
+                          style: const pw.TextStyle(fontSize: 12)),
                       pw.Text(
-                          '${recipe.rating} (${recipe.reviewCount} reviews)'),
+                          '${recipe.rating} (${recipe.reviewCount} reviews)',
+                          style: const pw.TextStyle(fontSize: 12)),
                     ],
                   );
                 }),

@@ -1,17 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 class CustomCard extends StatelessWidget {
-  final String imageUrl;
+  final String? imageUrl;
   final String name;
-  final List<String> tags;
+  final List<String>? tags;
   final String difficulty;
   final VoidCallback? onTap;
 
   const CustomCard({
     super.key,
-    required this.imageUrl,
+    this.imageUrl,
     required this.name,
-    required this.tags,
+    this.tags,
     required this.difficulty,
     this.onTap,
   });
@@ -33,36 +35,63 @@ class CustomCard extends StatelessWidget {
               // Image Section
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Image.network(
-                  imageUrl,
-                  width: 100,
-                  height: 100,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return SizedBox(
-                      width: 100,
-                      height: 100,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  (loadingProgress.expectedTotalBytes ?? 1)
-                              : null,
-                        ),
+                child: imageUrl != null
+                    ? (imageUrl!.startsWith('http')
+                        ? Image.network(
+                            imageUrl!,
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return SizedBox(
+                                width: 100,
+                                height: 100,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes !=
+                                            null
+                                        ? loadingProgress
+                                                .cumulativeBytesLoaded /
+                                            (loadingProgress
+                                                    .expectedTotalBytes ??
+                                                1)
+                                        : null,
+                                  ),
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Image.asset(
+                                'assets/default_recipe.png',
+                                width: 100,
+                                height: 100,
+                                fit: BoxFit.cover,
+                              );
+                            },
+                          )
+                        : Image.file(
+                            File(imageUrl!),
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Image.asset(
+                                'assets/default_recipe.png',
+                                width: 100,
+                                height: 100,
+                                fit: BoxFit.cover,
+                              );
+                            },
+                          ))
+                    : Image.asset(
+                        'assets/default_recipe.png',
+                        width: 100,
+                        height: 100,
+                        fit: BoxFit.cover,
                       ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Image.network(
-                      'https://via.placeholder.com/100', // Fallback image URL
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.cover,
-                    );
-                  },
-                ),
               ),
+
               const SizedBox(width: 16), // Space between image and text
 
               // Text Section
@@ -81,15 +110,16 @@ class CustomCard extends StatelessWidget {
                     const SizedBox(height: 8),
 
                     // Tags
-                    Wrap(
-                      spacing: 8.0,
-                      children: tags
-                          .map((tag) => Chip(
-                                label: Text(tag),
-                                backgroundColor: Colors.blue.shade200,
-                              ))
-                          .toList(),
-                    ),
+                    if (tags != null)
+                      Wrap(
+                        spacing: 8.0,
+                        children: tags!
+                            .map((tag) => Chip(
+                                  label: Text(tag),
+                                  backgroundColor: Colors.blue.shade200,
+                                ))
+                            .toList(),
+                      ),
                     const SizedBox(height: 8),
 
                     // Difficulty

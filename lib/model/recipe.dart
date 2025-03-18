@@ -1,19 +1,37 @@
-class Recipe {
+import 'package:recipe_book/model/irecipe.dart';
+
+class Recipe implements IRecipe {
+  @override
   final int id;
+  @override
   final String name;
+  @override
   final List<String> ingredients;
+  @override
   final List<String> instructions;
+  @override
   final int prepTimeMinutes;
+  @override
   final int cookTimeMinutes;
+  @override
   final int servings;
+  @override
   final String difficulty;
+  @override
   final String cuisine;
+  @override
   final int caloriesPerServing;
+  @override
   final List<String> tags;
+  @override
   final int userId;
+  @override
   final String image;
+  @override
   final double rating;
+  @override
   final int reviewCount;
+  @override
   final List<String> mealType;
 
   Recipe({
@@ -54,22 +72,42 @@ class Recipe {
         mealType: List<String>.from(json["mealType"].map((x) => x)),
       );
 
-  Map<String, dynamic> toJson() => {
+  // Map<String, dynamic> toJson() => {
+  //       "id": id,
+  //       "name": name,
+  //       "ingredients": List<dynamic>.from(ingredients.map((x) => x)),
+  //       "instructions": List<dynamic>.from(instructions.map((x) => x)),
+  //       "prepTimeMinutes": prepTimeMinutes,
+  //       "cookTimeMinutes": cookTimeMinutes,
+  //       "servings": servings,
+  //       "difficulty": difficulty,
+  //       "cuisine": cuisine,
+  //       "caloriesPerServing": caloriesPerServing,
+  //       "tags": List<dynamic>.from(tags.map((x) => x)),
+  //       "userId": userId,
+  //       "image": image,
+  //       "rating": rating,
+  //       "reviewCount": reviewCount,
+  //       "mealType": List<dynamic>.from(mealType.map((x) => x)),
+  //     };
+
+  @override
+  Map<String, dynamic> toMap() => {
         "id": id,
         "name": name,
-        "ingredients": List<dynamic>.from(ingredients.map((x) => x)),
-        "instructions": List<dynamic>.from(instructions.map((x) => x)),
+        "ingredients": ingredients.join(','),
+        "instructions": instructions.join(','),
         "prepTimeMinutes": prepTimeMinutes,
         "cookTimeMinutes": cookTimeMinutes,
         "servings": servings,
         "difficulty": difficulty,
         "cuisine": cuisine,
         "caloriesPerServing": caloriesPerServing,
-        "tags": List<dynamic>.from(tags.map((x) => x)),
+        "tags": tags.join(','),
         "userId": userId,
         "image": image,
         "rating": rating,
         "reviewCount": reviewCount,
-        "mealType": List<dynamic>.from(mealType.map((x) => x)),
+        "mealType": mealType.join(','),
       };
 }

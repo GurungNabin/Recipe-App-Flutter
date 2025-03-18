@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recipe_book/api/movie.dart';
 import 'package:recipe_book/api/recipe.dart';
-import 'package:recipe_book/presentation/bloc/movie/movie_bloc.dart';
-import 'package:recipe_book/presentation/bloc/recipe/recipe_bloc.dart';
+import 'package:recipe_book/bloc/movie/movie_bloc.dart';
+import 'package:recipe_book/bloc/recipe/recipe_bloc.dart';
 import 'package:recipe_book/presentation/pages/home_screen.dart';
 
 void main() {
