@@ -58,8 +58,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       print("Permission Denied");
       return;
     }
-
-    print("Image Picker Triggered"); // Debug print
+    print("Image Picker Triggered");
 
     final picker = ImagePicker();
     final pickedFiles = await picker.pickMultiImage();

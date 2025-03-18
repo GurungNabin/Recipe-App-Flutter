@@ -14,7 +14,7 @@ abstract class IRecipe {
   double get rating;
   int get reviewCount;
   List<String> get mealType;
-  String get image; 
+  String get image;
 
   Map<String, dynamic> toMap();
 }
