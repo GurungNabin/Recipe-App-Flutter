@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:recipe_book/model/recipe.dart';
 
 abstract class PdfEvent extends Equatable {
   const PdfEvent();
